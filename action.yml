@@ -1,0 +1,56 @@
+name: e-bot7 helm chart value updater
+description: Create a PR to update a helm chart's value.
+inputs:
+  repository:
+    required: true
+    description: The repository with the helm chart values file.
+  file_path:
+    required: true
+    description: The path of the yaml file to be updated, relative to the repository root.
+  key:
+    required: true
+    description: The key to be updated in the file.
+    example: '.myApp.image.tag'
+  value:
+    required: true
+    description: The value to set for the given key.
+  ssh_key:
+    required: true
+    description: The SSH key used to checkout the repo and create the PR.
+
+runs:
+    using: composite
+    steps:
+      - name: Clone remote repository
+        uses: actions/checkout@v2
+        env:
+          REMOTE_GIT_REPOSITORY: 'ebot7/core-helm-charts'
+        with:
+          ssh-key: ${{ inputs.ssh_key }}
+          repository: ${{ inputs.repository }}
+
+      - name: Set latest image and tag to the current one
+        shell: bash
+        run: |
+          yq e -i '${{ inputs.key }} = "${{ inputs.value }}"' ${{ inputs.file_path }}
+
+      - name: Create automated Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          branch: github-action-argo-autopr
+          branch-suffix: random
+          delete-branch: true
+          title: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
+          body: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
+
+      - name: Check outputs
+        shell: bash
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+
+     
