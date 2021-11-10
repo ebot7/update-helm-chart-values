@@ -43,7 +43,6 @@ runs:
           commit-message: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           branch: autoupdate-${{ inputs.file_path }}
-          branch-suffix: random
           delete-branch: true
           title: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
           body: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
