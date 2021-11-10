@@ -14,9 +14,9 @@ inputs:
   value:
     required: true
     description: The value to set for the given key.
-  ssh_key:
+  token:
     required: true
-    description: The SSH key used to checkout the repo and create the PR.
+    description: The token used to checkout the repo and create the PR.
   auto_merge:
     default: false
     description: Whether to enable automatic merging for the PR.
@@ -26,11 +26,9 @@ runs:
     steps:
       - name: Clone remote repository
         uses: actions/checkout@v2
-        env:
-          REMOTE_GIT_REPOSITORY: 'ebot7/core-helm-charts'
         with:
-          ssh-key: ${{ inputs.ssh_key }}
           repository: ${{ inputs.repository }}
+          token: ${{ inputs.token }}
 
       - name: Set latest image and tag to the current one
         shell: bash
@@ -41,6 +39,7 @@ runs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
+          token: ${{ inputs.token }}
           commit-message: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           branch: github-action-argo-autopr
@@ -53,7 +52,7 @@ runs:
         if: steps.cpr.outputs.pull-request-operation == 'created' && inputs.auto_merge
         uses: peter-evans/enable-pull-request-automerge@v1
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ inputs.token }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
           merge-method: rebase
 
