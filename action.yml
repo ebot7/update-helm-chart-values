@@ -17,6 +17,9 @@ inputs:
   ssh_key:
     required: true
     description: The SSH key used to checkout the repo and create the PR.
+  auto_merge:
+    default: false
+    description: Whether to enable automatic merging for the PR.
 
 runs:
     using: composite
@@ -45,6 +48,14 @@ runs:
           delete-branch: true
           title: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
           body: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
+
+      - name: Enable Pull Request Automerge
+        if: steps.cpr.outputs.pull-request-operation == 'created' && inputs.auto_merge
+        uses: peter-evans/enable-pull-request-automerge@v1
+        with:
+          token: ${{ secrets.PAT }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: rebase
 
       - name: Check outputs
         shell: bash
