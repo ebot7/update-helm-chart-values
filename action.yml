@@ -37,9 +37,10 @@ runs:
 
           git checkout -b autoupdate-${{ inputs.file_path }}
 
+          git config user.name ${{ github.actor }}
+          git config user.email "${{ github.actor }}@users.noreply.github.com>"
           git commit \
           -m "Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}" \
-          --author "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>" \
           ${{ inputs.file_path }}
 
           git push --set-upstream origin autoupdate-${{ inputs.file_path }}
