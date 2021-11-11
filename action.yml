@@ -30,36 +30,31 @@ runs:
           repository: ${{ inputs.repository }}
           token: ${{ inputs.token }}
 
-      - name: Set latest image and tag to the current one
+      - name: Update the value in the yaml file
         shell: bash
         run: |
           yq e -i '${{ inputs.key }} = "${{ inputs.value }}"' ${{ inputs.file_path }}
 
+          git checkout -b autoupdate-${{ inputs.file_path }}
+
+          git commit \
+          -m "Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}" \
+          --author "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>" \
+          ${{ inputs.file_path }}
+
+          git push --set-upstream origin autoupdate-${{ inputs.file_path }}
+
       - name: Create automated Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ inputs.token }}
-          commit-message: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
-          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          branch: autoupdate-${{ inputs.file_path }}
-          delete-branch: true
-          title: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
-          body: Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}
-
-      - name: Enable Pull Request Automerge
-        if: steps.cpr.outputs.pull-request-operation == 'created' && inputs.auto_merge
-        uses: peter-evans/enable-pull-request-automerge@v1
-        with:
-          token: ${{ inputs.token }}
-          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: rebase
-
-      - name: Check outputs
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ inputs.token }}
         run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+          gh pr create --fill
 
-
-     
+          if gh pr checks
+          then
+            # All checks are passing, merge.
+            gh pr merge --rebase --delete
+          else
+            gh pr merge --auto --rebase --delete
+          fi
