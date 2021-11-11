@@ -34,8 +34,9 @@ runs:
         shell: bash
         run: |
           yq e -i '${{ inputs.key }} = "${{ inputs.value }}"' ${{ inputs.file_path }}
+          BRANCH="autoupdate-${{ inputs.file_path }}"
 
-          git checkout -b autoupdate-${{ inputs.file_path }}
+          git checkout -b $BRANCH
 
           git config user.name ${{ github.actor }}
           git config user.email "${{ github.actor }}@users.noreply.github.com>"
@@ -43,7 +44,7 @@ runs:
           -m "Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}" \
           ${{ inputs.file_path }}
 
-          git push --set-upstream origin autoupdate-${{ inputs.file_path }}
+          git push --force --set-upstream origin $BRANCH
 
       - name: Create automated Pull Request
         shell: bash
