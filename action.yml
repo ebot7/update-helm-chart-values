@@ -51,7 +51,11 @@ runs:
         env:
           GITHUB_TOKEN: ${{ inputs.token }}
         run: |
-          gh pr create --fill
+          if ! gh pr view
+          then
+            # Create a PR if it doesn't exist yet.
+            gh pr create --fill
+          fi
 
           if gh pr checks
           then
