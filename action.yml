@@ -60,7 +60,7 @@ runs:
           if gh pr checks
           then
             # All checks are passing, merge.
-            gh pr merge --rebase --delete
+            gh pr merge --rebase --delete-branch
           else
-            gh pr merge --auto --rebase --delete
+            gh pr merge --auto --rebase --delete-branch
           fi
