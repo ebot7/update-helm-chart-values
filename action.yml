@@ -6,7 +6,7 @@ inputs:
     description: The repository with the helm chart values file.
   file_path:
     required: true
-    description: The path of the yaml file to be updated, relative to the repository root.
+    description: The path to the file relative to the repository root. This can contain bash globbing patterns to update multiple files.
   key:
     required: true
     description: The key to be updated in the file.
@@ -33,7 +33,9 @@ runs:
       - name: Update the value in the yaml file
         shell: bash
         run: |
-          yq e -i '${{ inputs.key }} = "${{ inputs.value }}"' ${{ inputs.file_path }}
+          # Process each file individually, yq doesn't support editing multiple files.
+          ls ${{ inputs.file_path }} | \
+            xargs -n1 yq e -i '${{ inputs.key }} = "${{ inputs.value }}"' 
           BRANCH="autoupdate-${{ inputs.file_path }}"
 
           git checkout -b $BRANCH
