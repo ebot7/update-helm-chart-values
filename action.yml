@@ -53,9 +53,9 @@ runs:
         env:
           GITHUB_TOKEN: ${{ inputs.token }}
         run: |
-          if ! gh pr view
+          # Create a PR if it doesn't exist yet or if there is one that isn't open.
+          if [[ "$(gh pr view --json state)" != *"OPEN"* ]]
           then
-            # Create a PR if it doesn't exist yet.
             gh pr create --fill
           fi
 
