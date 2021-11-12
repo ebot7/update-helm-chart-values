@@ -36,7 +36,7 @@ runs:
           # Process each file individually, yq doesn't support editing multiple files.
           ls ${{ inputs.file_path }} | \
             xargs -n1 yq e -i '${{ inputs.key }} = "${{ inputs.value }}"' 
-          BRANCH="autoupdate-${{ inputs.file_path }}"
+          BRANCH=$(echo "autoupdate-${{ inputs.file_path }}" | sed -r 's/[^-_.a-zA-Z0-9]+/_/g')
 
           git checkout -b $BRANCH
 
