@@ -43,6 +43,7 @@ runs:
           git config user.name ${{ github.actor }}
           git config user.email "${{ github.actor }}@users.noreply.github.com>"
           git commit \
+          --allow-empty \
           -m "Updating ${{ inputs.key }} to ${{ inputs.value }} in ${{ inputs.file_path }}" \
           ${{ inputs.file_path }}
 
