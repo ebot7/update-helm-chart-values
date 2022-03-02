@@ -18,7 +18,7 @@ inputs:
     required: true
     description: The token used to checkout the repo and create the PR.
   auto_merge:
-    default: false
+    default: true
     description: Whether to enable automatic merging for the PR.
 
 runs:
@@ -60,6 +60,12 @@ runs:
             gh pr create --fill
           fi
 
+      - name: Merge Pull Request
+        if: ${{ inputs.auto_merge }}
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ inputs.token }}
+        run: |
           if gh pr checks
           then
             # All checks are passing, merge.
